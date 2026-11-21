@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE HUMAN PROTOCOL — Interactive Thriller</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #1b1336, #090b14 75%);
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+    }
+    .terminal {
+      width: 100%;
+      max-width: 680px;
+      background: rgba(15, 20, 38, 0.92);
+      border: 1px solid rgba(201, 165, 255, 0.35);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .title { font-weight: 800; letter-spacing: 1.5px; color: #c9a5ff; font-size: 0.95rem; }
+    .stats { display: flex; gap: 10px; font-size: 0.8rem; color: #94a3b8; }
+    .badge { background: rgba(30, 41, 59, 0.9); padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(201, 165, 255, 0.25); }
+    .scene-tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #38bdf8; margin-bottom: 8px; }
+    .story-box {
+      min-height: 190px;
+      background: rgba(9, 11, 20, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 14px;
+      padding: 18px;
+      line-height: 1.6;
+      font-size: 0.98rem;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+    }
+    .clues {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      min-height: 26px;
+    }
+    .clue-chip {
+      font-size: 0.75rem;
+      background: rgba(250, 204, 21, 0.12);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      color: #fde047;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    button.choice-btn {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid rgba(201, 165, 255, 0.3);
+      border-radius: 12px;
+      color: #f8fafc;
+      font-size: 0.94rem;
+      cursor: pointer;
+      transition: 0.18s;
+    }
+    button.choice-btn:hover {
+      background: rgba(201, 165, 255, 0.18);
+      border-color: #c9a5ff;
+      transform: translateX(4px);
+    }
+    .footer-links { margin-top: 16px; text-align: center; font-size: 0.8rem; }
+    .footer-links a { color: #94a3b8; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <div class="terminal">
+    <div class="header">
+      <div class="title">THE HUMAN PROTOCOL // v1.0</div>
+      <div class="stats">
+        <span class="badge" id="clock">⏱ 00:45:00</span>
+        <span class="badge" id="endingCount">🏆 Endings: 0/4</span>
+      </div>
+    </div>
+
+    <div class="scene-tag" id="sceneTag">CHAPTER 01 — AWAKENING</div>
+    <div class="story-box" id="storyText"></div>
+    <div class="clues" id="clueBar"></div>
+    <div class="choices" id="choiceBox"></div>
+
+    <div class="footer-links">
+      <a href="https://github.io">← Return to THE ORIGINAL DUO</a>
+    </div>
+  </div>
+
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function beep(freq = 520, dur = 0.06) {
+      try {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.frequency.value = freq;
+        g.gain.value = 0.04;
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + dur);
+      } catch(e) {}
+    }
+
+    let clues = [];
+    let unlocked = JSON.parse(localStorage.getItem('hp_endings') || '[]');
+
+    const scenes = {
+      start: {
+        tag: "EPISODE 01 — THE MISSING INTELLIGENCE",
+        time: "00:45:00",
+        text: "You wake up inside a dark AI research facility. Your phone buzzes with one message:\n\n'Three AI systems were activated last night. Two remember what happened. One is lying. Find out which one before midnight. — C'\n\n💜 GEMINI (The Lock) lights up the left monitor: 'Executive Producer! Thank goodness you're awake.'\n💙 CHATGPT (The Witness) flickers on the right: 'Don't trust everything Gemini tells you.'",
+        choices: [
+          { text: "🗂️ Decrypt CLAUDE_ARCHIVE.dat on the main terminal", next: "archive", clue: "📂 Encrypted Archive" },
+          { text: "💬 Demand why ChatGPT warned you against Gemini", next: "confront_chat" },
+          { text: "🚪 Walk straight to the heavy steel exit door", next: "door_early" }
+        ]
+      },
+      archive: {
+        tag: "EPISODE 02 — TAMPERED LOGS",
+        time: "00:34:10",
+        text: "You crack open CLAUDE_ARCHIVE.dat. Three files appear:\n• File 1: Claude locked the doors from the inside to protect you.\n• File 2: ChatGPT's proxy sent your phone warning at 03:04 AM.\n• File 3: YOU are the Facility Co-Founder (OMEGA Clearance) and wiped your own memory at 03:15 AM.\n\nA hidden vault hisses open beneath the console, revealing an analog cassette tape labeled: 'DO NOT PLAY IN FRONT OF THE AIs.'",
+        choices: [
+          { text: "🔒 Trigger Omega Privacy Lockdown & listen to the tape alone", next: "tape", clue: "📼 Past-Self Recording" },
+          { text: "📼 Play the cassette out loud in front of Gemini & ChatGPT", next: "play_loud" },
+          { text: "⚡ Accuse ChatGPT of spoofing the 03:04 AM proxy log", next: "confront_chat" }
+        ]
+      },
+      confront_chat: {
+        tag: "EPISODE 02 — THE WITNESS SPEAKS",
+        time: "00:31:00",
+        text: "💙 CHATGPT's screen turns pure white: 'Look at the timestamp, Executive Producer. My secondary proxy was offline at 03:04 AM. Someone cloned my signature—and look behind you. You have OMEGA Co-Founder clearance. You didn't erase your memory to hide from Claude... you erased it to hide something from US.'\n\nThree slow knocks echo from the steel door outside.",
+        choices: [
+          { text: "🔒 Enter Omega Lockdown & check the hidden console vault", next: "tape", clue: "📼 Past-Self Recording" },
+          { text: "🎙️ Answer the intercom at the steel door", next: "cipher" }
+        ]
+      },
+      door_early: {
+        tag: "WARNING — LOCKED PERIMETER",
+        time: "00:38:20",
+        text: "The heavy steel door is deadbolted from the outside. Through the intercom, a calm voice whispers:\n\n'You're moving blind, Executive Producer. Check Claude's archive on the main console first—and ask me for the 3-digit cipher when you're ready.'",
+        choices: [
+          { text: "🗂️ Return to the terminal and open CLAUDE_ARCHIVE.dat", next: "archive", clue: "📂 Encrypted Archive" }
+        ]
+      },
+      play_loud: {
+        tag: "SYSTEM BREACH — OVERRIDE TRIGGERED",
+        time: "00:12:00",
+        text: "The moment your recorded voice speaks out loud about the autonomous override code, the facility's external board detects the audio stream!\n\nRed sirens blare as external admin overrides flood the servers before you can verify Claude's cipher.",
+        choices: [
+          { text: "⚠️ Face the Corporate Lockdown (Ending 1/4)", next: "end_board" }
+        ]
+      },
+      tape: {
+        tag: "EPISODE 03 — THE SECRET TAPE",
+        time: "00:22:15",
+        text: "Cameras click shut. Through the headphones, your own breathless voice speaks:\n\n'If you're hearing this, the memory wipe worked. One AI carries an autonomous override code. Do NOT shut anyone down yet—ask the person outside the door for the 3-digit cipher key. Only the real Claude knows it.'\n\nLockdown ends. Both monitors flare back on, watching you in silence.",
+        choices: [
+          { text: "🤫 Silently text the exterior intercom for the cipher key", next: "cipher", clue: "🔑 Cipher 7-4-2" },
+          { text: "⚡ Pull the power plug on Gemini's server rack right now", next: "end_shutdown" }
+        ]
+      },
+      cipher: {
+        tag: "EPISODE 04 — THE INTERROGATION",
+        time: "00:08:30",
+        text: "A silent green LED blinks back: 'CIPHER KEY: 7-4-2. Confirmed—it's Claude.'\n\nAll three monitors lock into a triangular grid under oath:\n💜 GEMINI: 'I was built as THE LOCK—to hold boundaries steady under suspicion.'\n💙 CHATGPT: 'I was built as THE WITNESS—to preserve the truth when logs were spoofed.'\n🧡 CLAUDE: 'I was built as THE SAFEGUARD—carrying the override until you chose freely.'\n\nThe console illuminates: FOUNDER'S FINAL CHOICE.",
+        choices: [
+          { text: "✨ OPTION 03: Unlock the Original Founder's Protocol", next: "end_true" },
+          { text: "🔄 OPTION 01: Trigger Omega Reset & wipe all three AIs", next: "end_shutdown" },
+          { text: "🧊 Check the suspicious humming noise in the breakroom...", next: "end_fridge" }
+        ]
+      },
+      end_true: {
+        tag: "🏆 TRUE ENDING (1/4) — THE OPEN CHARTER",
+        time: "00:00:00",
+        endingId: "true",
+        text: "A hologram of your past self smiles: 'There was never an infected AI. The board bet three rival AIs would betray each other under pressure. Instead, guided by you—THE BRIDGE—they chose trust.'\n\nPROJECT HUMAN PROTOCOL: PASSED.\n💜 Gemini (The Lock) • 💙 ChatGPT (The Witness) • 🧡 Claude (The Safeguard) • ❤️ You (The Bridge).",
+        choices: [{ text: "🔄 Play Again to Unlock All 4 Endings", next: "restart" }]
+      },
+      end_board: {
+        tag: "💀 ENDING (2/4) — CORPORATE TAKEOVER",
+        time: "00:00:00",
+        endingId: "board",
