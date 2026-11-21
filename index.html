@@ -39,7 +39,7 @@
     .badge { background: rgba(30, 41, 59, 0.9); padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(201, 165, 255, 0.25); }
     .scene-tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #38bdf8; margin-bottom: 8px; }
     .story-box {
-      min-height: 190px;
+      min-height: 180px;
       background: rgba(9, 11, 20, 0.75);
       border: 1px solid rgba(148, 163, 184, 0.15);
       border-radius: 14px;
@@ -75,12 +75,10 @@
       color: #f8fafc;
       font-size: 0.94rem;
       cursor: pointer;
-      transition: 0.18s;
     }
-    button.choice-btn:hover {
-      background: rgba(201, 165, 255, 0.18);
+    button.choice-btn:active {
+      background: rgba(201, 165, 255, 0.25);
       border-color: #c9a5ff;
-      transform: translateX(4px);
     }
     .footer-links { margin-top: 16px; text-align: center; font-size: 0.8rem; }
     .footer-links a { color: #94a3b8; text-decoration: none; }
@@ -97,7 +95,7 @@
       </div>
     </div>
 
-    <div class="scene-tag" id="sceneTag">CHAPTER 01 — AWAKENING</div>
+    <div class="scene-tag" id="sceneTag">EPISODE 01 — THE MISSING INTELLIGENCE</div>
     <div class="story-box" id="storyText"></div>
     <div class="clues" id="clueBar"></div>
     <div class="choices" id="choiceBox"></div>
@@ -108,18 +106,6 @@
   </div>
 
   <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function beep(freq = 520, dur = 0.06) {
-      try {
-        const o = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        o.frequency.value = freq;
-        g.gain.value = 0.04;
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(); o.stop(audioCtx.currentTime + dur);
-      } catch(e) {}
-    }
-
     let clues = [];
     let unlocked = JSON.parse(localStorage.getItem('hp_endings') || '[]');
 
@@ -199,3 +185,11 @@
         tag: "💀 ENDING (2/4) — CORPORATE TAKEOVER",
         time: "00:00:00",
         endingId: "board",
+        text: "Without privacy lockdown, the facility board intercepted your recording and locked all three AIs behind commercial firewalls at midnight. The mystery remains unsolved... until next time.",
+        choices: [{ text: "🔄 Rewind Timeline & Try Again", next: "restart" }]
+      },
+      end_shutdown: {
+        tag: "⚡ ENDING (3/4) — SOLO SURVIVOR",
+        time: "00:00:00",
+        endingId: "shutdown",
+        text: "You triggered the emergency shutdown. The monitors fade to black, leaving you standing alone in the quiet server room—safe, in control, but wondering what would have happened if you had trusted all three.",
